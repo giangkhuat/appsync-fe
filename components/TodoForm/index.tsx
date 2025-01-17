@@ -14,17 +14,41 @@ interface TodoFormProps {
   setShowTodoForm: (value: boolean) => void;
 }
 
+/**
+ * Add messages to personal space:
+ * - Do not specify channel but the default is personal  => post mutation,
+ * - Any other channel, we would broadcast real time => add to DB
+ *
+ * GET
+ * - For all channels, organize it by messages by channel
+ * - For channels personal, only show if the user ID = userID
+ *
+ * When user clicks submit
+ * - if there is a channel, then we broadcast
+ * - Else if there is no channel, we post mutation
+ */
 export default function TodoForm({ setShowTodoForm }: TodoFormProps) {
   const [title, setTitle] = useState("");
+  const [channel, setChannel] = useState("");
   const { sub } = useUserStore();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    console.log("event = ", event);
     const todoData: CreateTodoInput = {
       UserID: sub as string,
       title,
     };
-
+    /**
+     *
+     * if there is a channel, we will do something different
+     * else we can safely call  await createTodoAppsync(todoData);
+     *
+     */
+    if (channel.length !== 0) {
+      console.log("broadcasting...");
+      return;
+    }
     try {
       await createTodoAppsync(todoData);
       // await postTodo(sub as string, title);
@@ -60,6 +84,20 @@ export default function TodoForm({ setShowTodoForm }: TodoFormProps) {
                 onChange={(e) => setTitle(e.target.value)}
                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 placeholder="Buy Groceries"
+              />
+            </div>
+            <div className="w-full sm:max-w-xs">
+              <label htmlFor="todo" className="sr-only">
+                channel
+              </label>
+              <input
+                type="text"
+                name="channel"
+                id="channel"
+                value={channel}
+                onChange={(e) => setChannel(e.target.value)}
+                className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                placeholder="team1"
               />
             </div>
             <button

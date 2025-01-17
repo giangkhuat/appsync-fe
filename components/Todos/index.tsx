@@ -25,9 +25,17 @@ import { Amplify } from "aws-amplify";
  * 4. Add to do to that channel
  * 5. broadcast to the client subscribed to it (myself)
  * 6. add that item to dynamodb (durable storage)
+ * 8. add that item to 
  *
  * Later
  * - Specify a channel to be added to
+ * 
+ * 
+ * 
+ * Experience: 
+ * diffeerent workchannels to do: 
+ * - Personal 
+ * 
  */
 
 Amplify.configure(config);
@@ -35,7 +43,7 @@ Amplify.configure(config);
 const Todos = () => {
   const { sub } = useUserStore();
   const channelRef = useRef<EventsChannel | null>(null);
-  const [space, setSpace] = useState("");
+  const [channel, setChannel] = useState("");
   const [todos, setTodos] = useState([]);
   const { data, error } = useSWR(sub ? ["todos", sub] : null, () =>
     listTodosAppsync(sub as string)
@@ -54,17 +62,17 @@ const Todos = () => {
   };
 
   useEffect(() => {
-    if (!space || !space.length) {
+    if (!channel || !channel.length) {
       return;
     }
 
     const channelConnect = async () => {
       console.log("subscribe to a channel");
       try {
-        const channel = await events.connect(`/default/${space}`);
+        const topic = await events.connect(`/default/${channel}`);
         channelRef.current = channel;
 
-        channel.subscribe({
+        topic.subscribe({
           next: handleNewData,
           error: (err: any) => console.log(err),
         });
@@ -106,7 +114,7 @@ const Todos = () => {
         channelRef.current.close();
       }
     };
-  }, [space]);
+  }, [channel]);
 
   if (!sub) {
     return <div>Loading</div>;
@@ -127,11 +135,11 @@ const Todos = () => {
       </Button>
       <Button
         onClick={() => {
-          setSpace("leaderboard");
+          setChannel("leaderboard");
         }}
         className="mb-4"
       >
-        Join space
+        Join channel
       </Button>
       <Table data={todos as any} />
     </div>
