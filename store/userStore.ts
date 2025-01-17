@@ -25,7 +25,7 @@ export const useUserStore = create<UserState>((set) => ({
   },
 }));
 
-async function getUserName() {
+export const getUserName = async () => {
   try {
     const { username } = await getCurrentUser();
     const userData = await getUserByID(username);
@@ -36,4 +36,4 @@ async function getUserName() {
     // Handle the error, you might want to return a default value or throw the error again
     throw err;
   }
-}
+};

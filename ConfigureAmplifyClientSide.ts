@@ -3,7 +3,7 @@
 import { Amplify } from "aws-amplify";
 import { ResourcesConfig } from "@aws-amplify/core";
 
-const config: ResourcesConfig = {
+export const config: ResourcesConfig = {
   API: {
     GraphQL: {
       endpoint: process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT as string,
@@ -15,6 +15,13 @@ const config: ResourcesConfig = {
         endpoint: process.env.NEXT_PUBLIC_APIGATEWAY_ENDPOINT as string,
         region: process.env.NEXT_PUBLIC_REGION as string,
       },
+    },
+    Events: {
+      endpoint:
+        "https://q3w7bmrc6raodoujk2gmqfffee.appsync-api.us-east-1.amazonaws.com/event",
+      region: "us-east-1",
+      defaultAuthMode: "userPool",
+      // apiKey: "da2-gkpqovtwyvhrtfqbzdqbtlxedq",
     },
   },
   Auth: {

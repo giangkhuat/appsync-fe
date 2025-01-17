@@ -7,7 +7,7 @@ const client = new DynamoDBClient({
   credentials: {
     accessKeyId: process.env.NEXT_PUBLIC_AWS_ID as string,
     secretAccessKey: process.env.NEXT_PUBLIC_AWS_SECRET as string,
-  },
+  }
 });
 export const getUserByID = async (UserID: string) => {
   try {
