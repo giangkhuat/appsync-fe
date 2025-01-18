@@ -1,8 +1,8 @@
 "use client";
 
-import { postTodo } from "@/actions/apigateway.actions";
 import { createTodoAppsync } from "@/actions/appsync.actions";
 import { useUserStore } from "@/store/userStore";
+import { events } from "aws-amplify/data";
 import { useState } from "react";
 
 type CreateTodoInput = {
@@ -29,32 +29,40 @@ interface TodoFormProps {
  */
 export default function TodoForm({ setShowTodoForm }: TodoFormProps) {
   const [title, setTitle] = useState("");
-  const [channel, setChannel] = useState("");
+
   const { sub } = useUserStore();
+
+  const handlePublish = async () => {
+    await events.post("/default/leaderboard", {
+      todo: "buy shampoo",
+    });
+  };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    console.log("event = ", event);
     const todoData: CreateTodoInput = {
       UserID: sub as string,
       title,
     };
-    /**
-     *
-     * if there is a channel, we will do something different
-     * else we can safely call  await createTodoAppsync(todoData);
-     *
-     */
-    if (channel.length !== 0) {
-      console.log("broadcasting...");
+
+    const form = event.currentTarget; // The form element
+    const formData = new FormData(form);
+
+    const submittedData: Record<string, string> = {};
+    formData.forEach((value, key) => {
+      submittedData[key] = value.toString(); // Convert values to string
+    });
+
+    console.log("Submitted data:", submittedData);
+    if (submittedData.channel && submittedData.channel.length != 0) {
+      handlePublish();
+      setShowTodoForm(false);
       return;
     }
+
     try {
       await createTodoAppsync(todoData);
-      // await postTodo(sub as string, title);
-      // Reset the form fields or handle success
     } catch (error) {
-      // Handle error
     } finally {
       setShowTodoForm(false);
       window.location.reload();
@@ -88,16 +96,14 @@ export default function TodoForm({ setShowTodoForm }: TodoFormProps) {
             </div>
             <div className="w-full sm:max-w-xs">
               <label htmlFor="todo" className="sr-only">
-                channel
+                Channel
               </label>
               <input
                 type="text"
                 name="channel"
                 id="channel"
-                value={channel}
-                onChange={(e) => setChannel(e.target.value)}
                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                placeholder="team1"
+                placeholder="leaderboard"
               />
             </div>
             <button

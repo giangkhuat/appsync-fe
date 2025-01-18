@@ -5,12 +5,15 @@ import { useUserStore } from "@/store/userStore";
 import { Disclosure } from "@headlessui/react";
 import { PlusIcon } from "@heroicons/react/20/solid";
 import { ArrowLeftEndOnRectangleIcon } from "@heroicons/react/24/outline";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import TodoForm from "../TodoForm";
+import { useChannel } from "@/context/ChannelContext";
+
 export default function NavBar() {
   const { username, sub } = useUserStore();
-
+  const { subscribeToChannel } = useChannel();
   const [showTodoForm, setShowTodoForm] = useState(false);
+  const [channel, setChannel] = useState("");
 
   const signOut = async () => {
     try {
@@ -21,6 +24,12 @@ export default function NavBar() {
       alert(error);
     }
   };
+
+  useEffect(() => {
+    if (channel.length !== 0) {
+      subscribeToChannel(channel);
+    }
+  }, [channel]);
 
   return (
     <>
@@ -42,6 +51,13 @@ export default function NavBar() {
                 </div>
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
+                    <button
+                      type="button"
+                      className="relative inline-flex items-center gap-x-1.5 rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                      onClick={() => setChannel("leaderboard")}
+                    >
+                      Subscribe to channel
+                    </button>
                     <button
                       type="button"
                       className="relative inline-flex items-center gap-x-1.5 rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
