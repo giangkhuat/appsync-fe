@@ -7,14 +7,33 @@ import React, {
 } from "react";
 import { events } from "aws-amplify/api";
 
-const ChannelContext = createContext(null);
+// Define the shape of the context
+interface ChannelContextType {
+  channel: string | null;
+  broadcastedTodos: Array<{
+    UserID: string;
+    TodoID: string;
+    title: string;
+    completed: boolean;
+  }>;
+  subscribeToChannel: (channelName: string) => Promise<void>;
+}
 
-export const ChannelProvider = ({ children }) => {
-  const [channel, setChannel] = useState(null);
-  const [broadcastedTodos, setBroadcastedTodos] = useState([]);
-  const channelRef = useRef(null);
+// Create the context with the correct type
+const ChannelContext = createContext<ChannelContextType | null>(null);
 
-  const subscribeToChannel = async (channelName) => {
+export const ChannelProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
+  const [channel, setChannel] = useState<string | null>(null);
+  const [broadcastedTodos, setBroadcastedTodos] = useState<
+    ChannelContextType["broadcastedTodos"]
+  >([]);
+  const channelRef = useRef<any>(null);
+
+  const subscribeToChannel = async (channelName: string) => {
     if (!channelName) return;
 
     setChannel(channelName);
@@ -32,16 +51,7 @@ export const ChannelProvider = ({ children }) => {
     }
   };
 
-  const handleNewData = (data) => {
-    /**
-     {
-    "id": "c312f551-8b8d-4c62-8075-9a57e8e1edc8",
-    "type": "data",
-    "event": {
-        "todo": "buy shampoo"
-    }
-}
-     */
+  const handleNewData = (data: any) => {
     console.log("handle new data is called, data =", data);
     const todo = data?.event?.todo;
     const id = data?.id;
@@ -74,4 +84,11 @@ export const ChannelProvider = ({ children }) => {
   );
 };
 
-export const useChannel = () => useContext(ChannelContext);
+// Hook to consume the context
+export const useChannel = () => {
+  const context = useContext(ChannelContext);
+  if (!context) {
+    throw new Error("useChannel must be used within a ChannelProvider");
+  }
+  return context;
+};
