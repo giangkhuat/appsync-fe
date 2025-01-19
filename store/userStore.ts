@@ -33,7 +33,6 @@ export const getUserName = async () => {
     return { name: userData.Name, userID: userData.UserID };
   } catch (err) {
     console.log(err);
-    // Handle the error, you might want to return a default value or throw the error again
     throw err;
   }
 };

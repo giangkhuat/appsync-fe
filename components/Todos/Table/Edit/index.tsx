@@ -7,7 +7,6 @@ import {
   updateTodoAppsync,
 } from "@/actions/appsync.actions";
 import { useUserStore } from "@/store/userStore";
-import { deleteTodo, putTodo } from "@/actions/apigateway.actions";
 
 interface EditProps {
   title: string;
@@ -29,6 +28,7 @@ export default function Edit({ title, todoId }: EditProps) {
       UserID: sub as string,
       title,
     };
+    console.log("todo data to delete =", todoData);
     const response = await deleteTodoAppsync(todoData);
     // const response = await deleteTodo(sub as string, title as string);
     handleCancel();
@@ -40,7 +40,6 @@ export default function Edit({ title, todoId }: EditProps) {
       title,
     };
     const response = await updateTodoAppsync(todoData);
-    // const response = await putTodo(sub as string, title);
     handleCancel();
   };
 

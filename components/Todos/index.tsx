@@ -1,10 +1,8 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Table from "./Table";
-import { createTodoAppsync, listTodosAppsync } from "@/actions/appsync.actions";
-import { getUserName, useUserStore } from "@/store/userStore";
-import { events, EventsChannel } from "aws-amplify/data";
+import { listTodosAppsync } from "@/actions/appsync.actions";
+import { useUserStore } from "@/store/userStore";
 import useSWR from "swr";
-import { Button } from "../ui/button";
 import { config } from "../../ConfigureAmplifyClientSide";
 import { Amplify } from "aws-amplify";
 import { useChannel } from "@/context/ChannelContext";
