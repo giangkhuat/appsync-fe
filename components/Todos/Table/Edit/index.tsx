@@ -30,7 +30,6 @@ export default function Edit({ title, todoId }: EditProps) {
     };
     console.log("todo data to delete =", todoData);
     const response = await deleteTodoAppsync(todoData);
-    // const response = await deleteTodo(sub as string, title as string);
     handleCancel();
   };
 

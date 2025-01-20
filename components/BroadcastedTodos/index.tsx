@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { useChannel } from "@/context/ChannelContext";
+import Edit from "../Todos/Table/Edit";
 
 interface BroadcastedTodo {
   UserID: string;
@@ -10,6 +11,15 @@ interface BroadcastedTodo {
 }
 
 const BroadcastedTodos: React.FC = () => {
+  const [editTodoId, setEditTodoId] = useState<string | null>(null);
+
+  const handleEdit = (todoId: string) => {
+    setEditTodoId(todoId);
+  };
+
+  const handleCancelEdit = () => {
+    setEditTodoId(null);
+  };
   const { broadcastedTodos }: { broadcastedTodos: BroadcastedTodo[] } =
     useChannel();
 
@@ -27,9 +37,7 @@ const BroadcastedTodos: React.FC = () => {
 
   return (
     <div className="p-4 bg-gray-50 rounded-lg shadow-sm">
-      <h4 className="text-lg font-semibold text-gray-700 mb-4">
-        Broadcasted Todos
-      </h4>
+      <h4 className="text-lg font-semibold text-gray-700 mb-4">Shared</h4>
       {Object.keys(groupedTodos).length > 0 ? (
         <div className="space-y-6">
           {Object.entries(groupedTodos).map(([channel, todos]) => (
@@ -49,40 +57,50 @@ const BroadcastedTodos: React.FC = () => {
 
               {/* Todo List */}
               <div className="space-y-3">
-                {todos.map((todo: BroadcastedTodo) => (
+                {todos.map((todo) => (
                   <div
                     key={todo.TodoID}
                     className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-md p-3 hover:bg-gray-100 transition"
                   >
+                    {/* Title and Status */}
                     <div className="flex items-center">
-                      {/* Radio Button */}
-                      <input
-                        type="radio"
-                        name={`todo-${channel}`}
-                        className="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
-                        checked={todo.completed}
-                        readOnly
-                      />
-                      <div className="ml-3">
-                        <h6 className="text-sm font-medium text-gray-800">
-                          {todo.title}
-                        </h6>
-                        <p className="text-xs text-gray-500">
-                          {todo.completed ? "Completed" : "Incomplete"}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Action Icon */}
-                    <div>
+                      {/* Status Icon */}
                       {todo.completed ? (
-                        <span className="text-green-600 text-sm font-semibold">
+                        <span className="text-green-600 text-sm font-semibold mr-3">
                           ✔
                         </span>
                       ) : (
-                        <span className="text-red-600 text-sm font-semibold">
+                        <span className="text-red-600 text-sm font-semibold mr-3">
                           ✘
                         </span>
+                      )}
+                      {/* Title */}
+                      <div>
+                        <h6 className="text-sm font-medium text-gray-800 truncate">
+                          {todo.title}
+                        </h6>
+                      </div>
+                    </div>
+
+                    {/* Edit Button */}
+                    <div>
+                      {editTodoId === todo.TodoID ? (
+                        <>
+                          <button
+                            onClick={handleCancelEdit}
+                            className="text-indigo-600 hover:text-indigo-900 mr-2"
+                          >
+                            Cancel
+                          </button>
+                          <Edit title={todo.title} todoId={todo.TodoID} />
+                        </>
+                      ) : (
+                        <button
+                          onClick={() => handleEdit(todo.TodoID)}
+                          className="text-indigo-600 hover:text-indigo-900"
+                        >
+                          Edit
+                        </button>
                       )}
                     </div>
                   </div>
@@ -92,10 +110,9 @@ const BroadcastedTodos: React.FC = () => {
           ))}
         </div>
       ) : (
-        <p className="text-sm text-gray-600">No Broadcasted Todos</p>
+        <p className="text-sm text-gray-600">No shared Todos</p>
       )}
     </div>
   );
 };
-
 export default BroadcastedTodos;
