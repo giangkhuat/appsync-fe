@@ -7,7 +7,7 @@ import {
   updateTodoAppsync,
 } from "@/actions/appsync.actions";
 import { useUserStore } from "@/store/userStore";
-import { useTodoContext } from "@/context/TodoContext";
+import { useSharedTodoContext } from "@/context/SharedTodoContext";
 
 interface EditProps {
   title: string;
@@ -17,7 +17,7 @@ interface EditProps {
 export default function Edit({ title, todoId }: EditProps) {
   const [open, setOpen] = useState(true);
   const cancelButtonRef = useRef(null);
-  const { deleteTodo, completeTodo } = useTodoContext();
+  const { deleteTodo, completeTodo } = useSharedTodoContext();
   const sub = useUserStore((state) => state.sub) as any;
 
   const handleCancel = () => {
@@ -32,7 +32,7 @@ export default function Edit({ title, todoId }: EditProps) {
     try {
       await deleteTodoAppsync(todoData);
     } catch (error) {
-      console.log("error deleting to do =", error);
+      console.log("error delete:", error);
     }
 
     deleteTodo(todoId);
@@ -40,6 +40,7 @@ export default function Edit({ title, todoId }: EditProps) {
   };
 
   const handleComplete = async () => {
+    console.log("shared to do to complete");
     const todoData = {
       UserID: sub as string,
       title,
@@ -47,8 +48,9 @@ export default function Edit({ title, todoId }: EditProps) {
     try {
       await updateTodoAppsync(todoData);
     } catch (error) {
-      console.log("error deleting to do =", error);
+      console.log("error updating:", error);
     }
+
     completeTodo(todoId);
     handleCancel();
   };

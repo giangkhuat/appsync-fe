@@ -61,7 +61,6 @@ type ListTodosResponse = {
 }[];
 
 export const listTodosAppsync = async (UserID: string) => {
-  console.log("UserID", UserID);
   try {
     const response = await client.graphql({
       query: `

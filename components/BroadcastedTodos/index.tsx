@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useChannel } from "@/context/ChannelContext";
-import Edit from "../Todos/Table/Edit";
+import Edit from "./Edit";
 import { listAllTodosAppsync } from "@/actions/appsync.actions";
 import useSWR from "swr";
+import { useSharedTodoContext } from "@/context/SharedTodoContext";
 import { useUserStore } from "@/store/userStore";
 
 interface BroadcastedTodo {
@@ -12,16 +13,27 @@ interface BroadcastedTodo {
   completed: boolean;
   channel?: string; // Channel is optional
 }
+
+type EditButtonProps = {
+  userID: string;
+  todoID: string;
+};
+
 const BroadcastedTodos: React.FC = () => {
-  const { sub } = useUserStore();
   const [editTodoId, setEditTodoId] = useState<string | null>(null);
+  const { sharedTodos, setSharedTodos } = useSharedTodoContext();
+  const { data, error } = useSWR("listAllTodos", () =>
+    listAllTodosAppsync()
+  ) as any;
 
   const { broadcastedTodos }: { broadcastedTodos: BroadcastedTodo[] } =
     useChannel();
 
-  const { data, error } = useSWR(sub ? ["todos", sub] : null, () =>
-    listAllTodosAppsync()
-  ) as any;
+  useEffect(() => {
+    if (data) {
+      setSharedTodos(data || []);
+    }
+  }, [data]);
 
   const handleEdit = (todoId: string) => {
     setEditTodoId(todoId);
@@ -31,8 +43,10 @@ const BroadcastedTodos: React.FC = () => {
     setEditTodoId(null);
   };
 
-  const allTodos = data ? [...data, ...broadcastedTodos] : broadcastedTodos;
-  console.log("all to dos = ", data);
+  const allTodos = sharedTodos
+    ? [...sharedTodos, ...broadcastedTodos]
+    : broadcastedTodos;
+  console.log("all to dos = ", allTodos);
   // Group todos by channel
   const groupedTodos: Record<string, BroadcastedTodo[]> = allTodos.reduce(
     (acc: Record<string, BroadcastedTodo[]>, todo: BroadcastedTodo) => {
@@ -46,6 +60,22 @@ const BroadcastedTodos: React.FC = () => {
     },
     {}
   );
+  const EditButton: React.FC<EditButtonProps> = ({ userID, todoID }) => {
+    const { sub } = useUserStore();
+    if (userID === sub) {
+      return (
+        <button
+          onClick={() => {
+            handleEdit(todoID);
+          }}
+          className="text-indigo-600 hover:text-indigo-900"
+        >
+          Edit
+        </button>
+      );
+    }
+    return <></>;
+  };
 
   return (
     <div className="p-4 bg-gray-50 rounded-lg shadow-sm">
@@ -107,12 +137,7 @@ const BroadcastedTodos: React.FC = () => {
                           <Edit title={todo.title} todoId={todo.TodoID} />
                         </>
                       ) : (
-                        <button
-                          onClick={() => handleEdit(todo.TodoID)}
-                          className="text-indigo-600 hover:text-indigo-900"
-                        >
-                          Edit
-                        </button>
+                        <EditButton userID={todo.UserID} todoID={todo.TodoID} />
                       )}
                     </div>
                   </div>

@@ -19,6 +19,7 @@ export interface PersonalTodo {
 
 const Todos = () => {
   const { sub } = useUserStore();
+
   const { personalTodos, setPersonalTodos } = useTodoContext();
   const { data, error } = useSWR(sub ? ["todos", sub] : null, () =>
     listTodosAppsync(sub as string)
@@ -38,11 +39,11 @@ const Todos = () => {
     return <div>Error occurred while fetching todos</div>;
   }
 
-  // Count incomplete todos
-
   const filteredData = personalTodos.filter(
-    (todo) => !todo.channel || todo.channel.trim() === ""
+    (todo) =>
+      (!todo.channel || todo.channel.trim() === "") && todo.UserID === sub
   );
+
   const incompleteCount = filteredData.filter((todo) => !todo.completed).length;
   return (
     <div className="p-4 bg-gray-50 rounded-lg shadow-sm">
