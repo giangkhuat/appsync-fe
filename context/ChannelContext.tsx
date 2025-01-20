@@ -7,7 +7,6 @@ import React, {
 } from "react";
 import { events } from "aws-amplify/api";
 
-// Define the shape of the context
 interface ChannelContextType {
   channel: string | null;
   broadcastedTodos: Array<{
@@ -55,7 +54,6 @@ export const ChannelProvider = ({
     console.log("handle new data is called, data =", data);
     const todo = data?.event?.todo;
     const id = data?.id;
-
     if (todo && id) {
       const newTodo = {
         UserID: "broadcast",

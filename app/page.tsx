@@ -1,4 +1,5 @@
 "use client";
+import BroadcastedTodos from "@/components/BroadcastedTodos";
 import NavBar from "@/components/NavBar";
 import Todos from "@/components/Todos";
 import { ChannelProvider } from "@/context/ChannelContext";
@@ -15,6 +16,7 @@ function Page() {
     <ChannelProvider>
       <div className="mx-auto px-4 sm:px-6 lg:px-8">
         <NavBar />
+        <BroadcastedTodos />
         <Todos />
       </div>
     </ChannelProvider>

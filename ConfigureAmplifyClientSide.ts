@@ -10,18 +10,17 @@ export const config: ResourcesConfig = {
       region: process.env.NEXT_PUBLIC_REGION as string,
       defaultAuthMode: "userPool",
     },
-    REST: {
-      TodoHttpAPI: {
-        endpoint: process.env.NEXT_PUBLIC_APIGATEWAY_ENDPOINT as string,
-        region: process.env.NEXT_PUBLIC_REGION as string,
-      },
-    },
+    // REST: {
+    //   TodoHttpAPI: {
+    //     endpoint: process.env.NEXT_PUBLIC_APIGATEWAY_ENDPOINT as string,
+    //     region: process.env.NEXT_PUBLIC_REGION as string,
+    //   },
+    // },
     Events: {
       endpoint:
         "https://q3w7bmrc6raodoujk2gmqfffee.appsync-api.us-east-1.amazonaws.com/event",
       region: "us-east-1",
       defaultAuthMode: "userPool",
-      // apiKey: "da2-gkpqovtwyvhrtfqbzdqbtlxedq",
     },
   },
   Auth: {

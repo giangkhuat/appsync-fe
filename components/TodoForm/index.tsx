@@ -32,9 +32,9 @@ export default function TodoForm({ setShowTodoForm }: TodoFormProps) {
 
   const { sub } = useUserStore();
 
-  const handlePublish = async () => {
-    await events.post("/default/leaderboard", {
-      todo: "buy shampoo",
+  const handlePublish = async (todo: string, channel: string) => {
+    await events.post(`/default/${channel}`, {
+      todo,
     });
   };
 
@@ -55,7 +55,7 @@ export default function TodoForm({ setShowTodoForm }: TodoFormProps) {
 
     console.log("Submitted data:", submittedData);
     if (submittedData.channel && submittedData.channel.length != 0) {
-      handlePublish();
+      handlePublish(submittedData.todo, submittedData.channel);
       setShowTodoForm(false);
       return;
     }
