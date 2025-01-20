@@ -8,9 +8,16 @@ import { Amplify } from "aws-amplify";
 
 Amplify.configure(config);
 
+interface PersonalTodo {
+  UserID: string;
+  TodoID: string;
+  title: string;
+  completed: boolean;
+}
+
 const Todos = () => {
   const { sub } = useUserStore();
-  const [personalTodos, setPersonalTodos] = useState([]);
+  const [personalTodos, setPersonalTodos] = useState<PersonalTodo[]>([]);
   const { data, error } = useSWR(sub ? ["todos", sub] : null, () =>
     listTodosAppsync(sub as string)
   ) as any;
