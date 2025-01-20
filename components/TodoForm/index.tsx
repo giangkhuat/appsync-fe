@@ -4,6 +4,7 @@ import { createTodoAppsync } from "@/actions/appsync.actions";
 import { useUserStore } from "@/store/userStore";
 import { events } from "aws-amplify/data";
 import { useState } from "react";
+import { useTodoContext } from "@/context/TodoContext";
 
 type CreateTodoInput = {
   UserID: string;
@@ -17,6 +18,7 @@ interface TodoFormProps {
 
 export default function TodoForm({ setShowTodoForm }: TodoFormProps) {
   const [title, setTitle] = useState("");
+  const { setPersonalTodos } = useTodoContext();
   const { sub } = useUserStore();
 
   const handlePublish = async (todo: string, channel: string) => {
@@ -51,11 +53,18 @@ export default function TodoForm({ setShowTodoForm }: TodoFormProps) {
     }
 
     try {
-      await createTodoAppsync(todoData);
+      const res = await createTodoAppsync(todoData);
+      const newTodo = {
+        UserID: res.UserID,
+        TodoID: res.TodoID,
+        title: res.title,
+        completed: res.completed,
+        channel: res?.channel
+      };
+      setPersonalTodos((prev) => [...prev, newTodo]);
     } catch (error) {
     } finally {
       setShowTodoForm(false);
-      window.location.reload();
     }
   };
 

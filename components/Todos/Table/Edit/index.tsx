@@ -7,6 +7,7 @@ import {
   updateTodoAppsync,
 } from "@/actions/appsync.actions";
 import { useUserStore } from "@/store/userStore";
+import { useTodoContext } from "@/context/TodoContext";
 
 interface EditProps {
   title: string;
@@ -16,20 +17,20 @@ interface EditProps {
 export default function Edit({ title, todoId }: EditProps) {
   const [open, setOpen] = useState(true);
   const cancelButtonRef = useRef(null);
+  const { deleteTodo, completeTodo } = useTodoContext();
   const sub = useUserStore((state) => state.sub) as any;
+
   const handleCancel = () => {
-    window.location.reload();
     setOpen(false);
   };
 
-  // log userId and todoId
   const handleDelete = async () => {
     const todoData = {
       UserID: sub as string,
       title,
     };
-    console.log("todo data to delete =", todoData);
-    const response = await deleteTodoAppsync(todoData);
+    await deleteTodoAppsync(todoData);
+    deleteTodo(todoId);
     handleCancel();
   };
 
@@ -38,7 +39,8 @@ export default function Edit({ title, todoId }: EditProps) {
       UserID: sub as string,
       title,
     };
-    const response = await updateTodoAppsync(todoData);
+    await updateTodoAppsync(todoData);
+    completeTodo(todoId);
     handleCancel();
   };
 

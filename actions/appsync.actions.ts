@@ -23,6 +23,7 @@ type CreateTodoResponse = {
   TodoID: string;
   title: string;
   completed: boolean;
+  channel?: string;
 };
 
 export const createTodoAppsync = async (todoData: CreateTodoInput) => {
