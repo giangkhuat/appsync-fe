@@ -53,6 +53,7 @@ export const ChannelProvider = ({
   const handleNewData = (data: any) => {
     console.log("handle new data is called, data =", data);
     const todo = data?.event?.todo;
+    const channel = data?.event?.channel;
     const id = data?.id;
     if (todo && id) {
       const newTodo = {
@@ -60,6 +61,7 @@ export const ChannelProvider = ({
         TodoID: id,
         title: todo,
         completed: false,
+        channel
       };
       setBroadcastedTodos((prev) => [...prev, newTodo]);
     }

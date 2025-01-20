@@ -35,6 +35,7 @@ export default function TodoForm({ setShowTodoForm }: TodoFormProps) {
   const handlePublish = async (todo: string, channel: string) => {
     await events.post(`/default/${channel}`, {
       todo,
+      channel
     });
   };
 
