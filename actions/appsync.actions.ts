@@ -5,6 +5,7 @@ const client = generateClient();
 type CreateTodoInput = {
   UserID: string;
   title: string;
+  channel?: string;
 };
 
 type DeleteTodoInput = {
@@ -55,6 +56,7 @@ type ListTodosResponse = {
   TodoID: string;
   title: string;
   completed: boolean;
+  channel: string;
 }[];
 
 export const listTodosAppsync = async (UserID: string) => {
@@ -68,6 +70,7 @@ export const listTodosAppsync = async (UserID: string) => {
               TodoID
               title
               completed
+              channel
             }
           }
         `,

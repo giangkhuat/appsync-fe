@@ -8,12 +8,12 @@ import { useState } from "react";
 type CreateTodoInput = {
   UserID: string;
   title: string;
+  channel?: string;
 };
 
 interface TodoFormProps {
   setShowTodoForm: (value: boolean) => void;
 }
-
 
 export default function TodoForm({ setShowTodoForm }: TodoFormProps) {
   const [title, setTitle] = useState("");
@@ -36,16 +36,19 @@ export default function TodoForm({ setShowTodoForm }: TodoFormProps) {
       submittedData[key] = value.toString();
     });
 
-    if (submittedData.channel && submittedData.channel.length !== 0) {
-      handlePublish(submittedData.todo, submittedData.channel);
-      setShowTodoForm(false);
-      return;
-    }
-
     const todoData: CreateTodoInput = {
       UserID: sub as string,
       title: submittedData.todo,
+      channel: submittedData.channel?.length > 0 ? submittedData.channel : "",
     };
+
+    console.log("channel =", submittedData.channel);
+    if (submittedData.channel && submittedData.channel.length !== 0) {
+      handlePublish(submittedData.todo, submittedData.channel);
+      await createTodoAppsync(todoData);
+      setShowTodoForm(false);
+      return;
+    }
 
     try {
       await createTodoAppsync(todoData);
@@ -59,11 +62,16 @@ export default function TodoForm({ setShowTodoForm }: TodoFormProps) {
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
       <div className="bg-white shadow-lg rounded-lg p-6 w-full max-w-md">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Create a Todo</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          Create a Todo
+        </h3>
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Todo Input */}
           <div>
-            <label htmlFor="todo" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="todo"
+              className="block text-sm font-medium text-gray-700"
+            >
               Todo
             </label>
             <input
@@ -80,7 +88,10 @@ export default function TodoForm({ setShowTodoForm }: TodoFormProps) {
 
           {/* Channel Input */}
           <div>
-            <label htmlFor="channel" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="channel"
+              className="block text-sm font-medium text-gray-700"
+            >
               Channel (Optional)
             </label>
             <input
