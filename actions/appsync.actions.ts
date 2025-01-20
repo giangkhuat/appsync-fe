@@ -87,6 +87,30 @@ export const listTodosAppsync = async (UserID: string) => {
     throw error; // Rethrow the error or handle it according to your requirements
   }
 };
+
+export const listAllTodosAppsync = async () => {
+  try {
+    const response = await client.graphql({
+      query: `
+          query ListAllTodos {
+            listAllTodos {
+              UserID
+              TodoID
+              title
+              completed
+              channel
+            }
+          }
+        `,
+      authMode: "userPool",
+    });
+
+    return (response as any).data.listAllTodos as ListTodosResponse;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const deleteTodoAppsync = async (todoData: DeleteTodoInput) => {
   try {
     const response = await client.graphql({
