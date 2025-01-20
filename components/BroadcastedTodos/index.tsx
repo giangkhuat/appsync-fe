@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useChannel } from "@/context/ChannelContext";
 import Edit from "../Todos/Table/Edit";
 import { listTodosAppsync } from "@/actions/appsync.actions";
@@ -128,43 +128,11 @@ interface BroadcastedTodo {
 const BroadcastedTodos: React.FC = () => {
   const { sub } = useUserStore();
   const [editTodoId, setEditTodoId] = useState<string | null>(null);
-  const [todos, setTodos] = useState<BroadcastedTodo[]>([]);
-
-  // Fetch initial todos from SWR
+  const { broadcastedTodos }: { broadcastedTodos: BroadcastedTodo[] } =
+    useChannel();
   const { data, error } = useSWR(sub ? ["todos", sub] : null, () =>
     listTodosAppsync(sub as string)
   ) as any;
-
-  // Get real-time broadcasted todos
-  const { broadcastedTodos }: { broadcastedTodos: BroadcastedTodo[] } =
-    useChannel();
-
-  // Update todos state on first render or when data changes
-  useEffect(() => {
-    if (data) {
-      // Filter todos to include only those with matching UserID
-      setTodos(data.filter((todo: BroadcastedTodo) => todo.UserID === sub));
-    }
-  }, [data, sub]);
-
-  // Merge broadcastedTodos into the state and ensure no duplicates
-  useEffect(() => {
-    if (broadcastedTodos.length > 0) {
-      setTodos((prevTodos) => {
-        const mergedTodos = [...prevTodos];
-        const existingIds = new Set(prevTodos.map((todo) => todo.TodoID));
-
-        // Add only new todos from broadcastedTodos with matching UserID
-        broadcastedTodos.forEach((todo) => {
-          if (todo.UserID === sub && !existingIds.has(todo.TodoID)) {
-            mergedTodos.push(todo);
-          }
-        });
-
-        return mergedTodos;
-      });
-    }
-  }, [broadcastedTodos, sub]);
 
   const handleEdit = (todoId: string) => {
     setEditTodoId(todoId);
@@ -174,20 +142,20 @@ const BroadcastedTodos: React.FC = () => {
     setEditTodoId(null);
   };
 
-  const groupedTodos: Record<string, BroadcastedTodo[]> = todos.reduce(
-    (acc: Record<string, BroadcastedTodo[]>, todo: BroadcastedTodo) => {
-      const channel = todo.channel?.trim(); // Trim whitespace from channel
+  console.log("broadcasted to dos =", broadcastedTodos);
+  console.log("data = ", data);
 
-      // Skip todos with empty or undefined channels
-      if (!channel) return acc;
-
-      if (!acc[channel]) acc[channel] = [];
-      acc[channel].push(todo);
-
-      return acc;
-    },
-    {}
-  );
+  // Group todos by channel
+  const groupedTodos: Record<string, BroadcastedTodo[]> =
+    broadcastedTodos.reduce(
+      (acc: Record<string, BroadcastedTodo[]>, todo: BroadcastedTodo) => {
+        const channel = todo.channel || "Unknown Channel";
+        if (!acc[channel]) acc[channel] = [];
+        acc[channel].push(todo);
+        return acc;
+      },
+      {}
+    );
 
   return (
     <div className="p-4 bg-gray-50 rounded-lg shadow-sm">
