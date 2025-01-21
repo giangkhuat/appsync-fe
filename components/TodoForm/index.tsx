@@ -21,10 +21,16 @@ export default function TodoForm({ setShowTodoForm }: TodoFormProps) {
   const { setPersonalTodos } = useTodoContext();
   const { sub } = useUserStore();
 
-  const handlePublish = async (todo: string, channel: string) => {
+  const handlePublish = async (
+    todo: string,
+    channel: string,
+    todoID: string
+  ) => {
     await events.post(`/default/${channel}`, {
       todo,
       channel,
+      userID: sub,
+      todoID,
     });
   };
 
@@ -44,10 +50,9 @@ export default function TodoForm({ setShowTodoForm }: TodoFormProps) {
       channel: submittedData.channel?.length > 0 ? submittedData.channel : "",
     };
 
-    console.log("channel =", submittedData.channel);
     if (submittedData.channel && submittedData.channel.length !== 0) {
-      handlePublish(submittedData.todo, submittedData.channel);
-      await createTodoAppsync(todoData);
+      const res = await createTodoAppsync(todoData);
+      handlePublish(submittedData.todo, submittedData.channel, res.TodoID);
       setShowTodoForm(false);
       return;
     }
@@ -59,7 +64,7 @@ export default function TodoForm({ setShowTodoForm }: TodoFormProps) {
         TodoID: res.TodoID,
         title: res.title,
         completed: res.completed,
-        channel: res?.channel
+        channel: res?.channel,
       };
       setPersonalTodos((prev) => [...prev, newTodo]);
     } catch (error) {

@@ -31,7 +31,10 @@ const BroadcastedTodos: React.FC = () => {
 
   useEffect(() => {
     if (data) {
-      setSharedTodos(data || []);
+      const filteredSharedTodos = data.filter(
+        (item: { TodoID: string }) => !item.TodoID.startsWith("Personal_")
+      );
+      setSharedTodos(filteredSharedTodos || []);
     }
   }, [data]);
 
@@ -46,6 +49,8 @@ const BroadcastedTodos: React.FC = () => {
   const allTodos = sharedTodos
     ? [...sharedTodos, ...broadcastedTodos]
     : broadcastedTodos;
+
+  console.log("all shared to dos =", allTodos);
 
   // Group todos by channel
   const groupedTodos: Record<string, BroadcastedTodo[]> = allTodos.reduce(

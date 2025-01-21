@@ -5,7 +5,7 @@ import { useUserStore } from "@/store/userStore";
 import { Disclosure } from "@headlessui/react";
 import { PlusIcon } from "@heroicons/react/20/solid";
 import { ArrowLeftEndOnRectangleIcon } from "@heroicons/react/24/outline";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import TodoForm from "../TodoForm";
 import { useChannel } from "@/context/ChannelContext";
 
@@ -141,7 +141,7 @@ export default function Navbar() {
                   {/* Input for channel name */}
                   <input
                     type="text"
-                    placeholder="Enter channel name"
+                    placeholder="Enter workspace name"
                     value={channelName}
                     onChange={(e) => setChannelName(e.target.value)}
                     className="rounded-md border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
