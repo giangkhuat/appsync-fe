@@ -19,6 +19,17 @@ type EditButtonProps = {
   todoID: string;
 };
 
+const removeDuplicates = (todos: BroadcastedTodo[]): BroadcastedTodo[] => {
+  const seenTodoIDs = new Set<string>();
+  return todos.filter((todo) => {
+    if (seenTodoIDs.has(todo.TodoID)) {
+      return false; // Skip duplicate
+    }
+    seenTodoIDs.add(todo.TodoID); // Mark as seen
+    return true; // Include in the result
+  });
+};
+
 const BroadcastedTodos: React.FC = () => {
   const [editTodoId, setEditTodoId] = useState<string | null>(null);
   const { sharedTodos, setSharedTodos } = useSharedTodoContext();
@@ -31,8 +42,10 @@ const BroadcastedTodos: React.FC = () => {
 
   useEffect(() => {
     if (data) {
-      const filteredSharedTodos = data.filter(
-        (item: { TodoID: string }) => !item.TodoID.startsWith("Personal_")
+      const filteredSharedTodos = removeDuplicates(
+        data.filter(
+          (item: { TodoID: string }) => !item.TodoID.startsWith("Personal_")
+        )
       );
       setSharedTodos(filteredSharedTodos || []);
     }
