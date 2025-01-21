@@ -61,6 +61,7 @@ type ListTodosResponse = {
 }[];
 
 export const listTodosAppsync = async (UserID: string) => {
+  console.log("list to do appsync called with user ID ", UserID);
   try {
     const response = await client.graphql({
       query: `
@@ -82,12 +83,14 @@ export const listTodosAppsync = async (UserID: string) => {
 
     return (response as any).data.listTodos as ListTodosResponse;
   } catch (error) {
+    console.log("error =", error);
     // Handle error if necessary
     throw error; // Rethrow the error or handle it according to your requirements
   }
 };
 
 export const listAllTodosAppsync = async () => {
+  console.log("list all to dos called ");
   try {
     const response = await client.graphql({
       query: `
@@ -106,6 +109,7 @@ export const listAllTodosAppsync = async () => {
 
     return (response as any).data.listAllTodos as ListTodosResponse;
   } catch (error) {
+    console.log("error =", error);
     throw error;
   }
 };

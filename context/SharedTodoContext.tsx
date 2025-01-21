@@ -3,7 +3,6 @@ import React, {
   useContext,
   useState,
   ReactNode,
-  useEffect,
 } from "react";
 import { listAllTodosAppsync } from "@/actions/appsync.actions";
 import { PersonalTodo } from "@/components/Todos";
