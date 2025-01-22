@@ -19,6 +19,17 @@ type EditButtonProps = {
   todoID: string;
 };
 
+export const removeDuplicateChannels = (strings: string[]): string[] => {
+  return Array.from(new Set(strings));
+};
+
+const getChannels = (todos: BroadcastedTodo[]): string[] => {
+  const channels = todos
+    .map((todo) => todo.channel)
+    .filter((channel): channel is string => !!channel); // Filter out undefined or null values
+  return Array.from(new Set(channels));
+};
+
 const removeDuplicates = (todos: BroadcastedTodo[]): BroadcastedTodo[] => {
   const seenTodoIDs = new Set<string>();
   return todos.filter((todo) => {
@@ -33,6 +44,7 @@ const removeDuplicates = (todos: BroadcastedTodo[]): BroadcastedTodo[] => {
 const BroadcastedTodos: React.FC = () => {
   const [editTodoId, setEditTodoId] = useState<string | null>(null);
   const { sharedTodos, setSharedTodos } = useSharedTodoContext();
+  const { subscribeToChannel } = useChannel();
   const { data, error } = useSWR("listAllTodos", () =>
     listAllTodosAppsync()
   ) as any;
@@ -59,6 +71,11 @@ const BroadcastedTodos: React.FC = () => {
     : broadcastedTodos;
 
   const removeDuplicatesTodo = removeDuplicates(allTodos);
+  const uniqueChannels = removeDuplicateChannels(
+    getChannels(removeDuplicatesTodo)
+  );
+
+  uniqueChannels.forEach((channel) => subscribeToChannel(channel));
 
   // Group todos by channel
   const groupedTodos: Record<string, BroadcastedTodo[]> =

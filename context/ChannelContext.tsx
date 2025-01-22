@@ -7,15 +7,21 @@ import React, {
 } from "react";
 import { events } from "aws-amplify/api";
 
+interface Todo {
+  UserID: string;
+  TodoID: string;
+  title: string;
+  completed: boolean;
+}
+
 interface ChannelContextType {
-  channel: string | null;
-  broadcastedTodos: Array<{
-    UserID: string;
-    TodoID: string;
-    title: string;
-    completed: boolean;
-  }>;
+  channels: string[]; // List of channels with todos
+  broadcastedTodos: Todo[]; // Aggregated todos from all channels
   subscribeToChannel: (channelName: string) => Promise<void>;
+}
+
+function isChannelExisted(channel: string, channels: string[]): boolean {
+  return channels.includes(channel);
 }
 
 // Create the context with the correct type
@@ -26,56 +32,64 @@ export const ChannelProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const [channel, setChannel] = useState<string | null>(null);
+  const [channels, setChannels] = useState<string[]>([]);
   const [broadcastedTodos, setBroadcastedTodos] = useState<
     ChannelContextType["broadcastedTodos"]
   >([]);
-  const channelRef = useRef<any>(null);
+  const channelRefs = useRef<Map<string, any>>(new Map());
 
   const subscribeToChannel = async (channelName: string) => {
-    if (!channelName) return;
+    if (!channelName || channelRefs.current.has(channelName)) return;
 
-    setChannel(channelName);
     try {
       const topic = await events.connect(`/default/${channelName}`);
-      channelRef.current = topic;
+      channelRefs.current.set(channelName, topic);
 
       topic.subscribe({
-        next: handleNewData,
-        error: (err) => console.error("Subscription error:", err),
+        next: (data) => handleNewData(data),
+        error: (err) =>
+          console.error(`Subscription error for ${channelName}:`, err),
       });
-      console.log("subscribed to channel ", channelName);
+
+      if (!isChannelExisted(channelName, channels)) {
+        setChannels((prev) => [...prev, channelName]);
+      }
+
+      console.log(`Subscribed to channel: ${channelName}`);
     } catch (error) {
-      console.error("Error subscribing to channel:", error);
+      console.error(`Error subscribing to channel ${channelName}:`, error);
     }
   };
-
   const handleNewData = (data: any) => {
     const todo = data?.event?.todo;
     const channel = data?.event?.channel;
     if (todo && data?.event.todoID) {
-      const newTodo = {
+      const newTodo: any = {
         UserID: data?.event.userID,
         TodoID: data?.event.todoID,
         title: todo,
         completed: false,
         channel,
       };
+
       setBroadcastedTodos((prev) => [...prev, newTodo]);
     }
   };
 
   useEffect(() => {
     return () => {
-      if (channelRef.current) {
-        channelRef.current.close();
-      }
+      channelRefs.current.forEach((topic) => topic.close());
+      channelRefs.current.clear();
     };
   }, []);
 
   return (
     <ChannelContext.Provider
-      value={{ channel, broadcastedTodos, subscribeToChannel }}
+      value={{
+        channels,
+        broadcastedTodos,
+        subscribeToChannel,
+      }}
     >
       {children}
     </ChannelContext.Provider>

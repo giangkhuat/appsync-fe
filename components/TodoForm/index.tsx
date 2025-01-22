@@ -5,6 +5,8 @@ import { useUserStore } from "@/store/userStore";
 import { events } from "aws-amplify/data";
 import { useState } from "react";
 import { useTodoContext } from "@/context/TodoContext";
+import { useChannel } from "@/context/ChannelContext";
+import { removeDuplicateChannels } from "../BroadcastedTodos";
 
 type CreateTodoInput = {
   UserID: string;
@@ -18,6 +20,9 @@ interface TodoFormProps {
 
 export default function TodoForm({ setShowTodoForm }: TodoFormProps) {
   const [title, setTitle] = useState("");
+  const { channels } = useChannel();
+  const filteredChannels = removeDuplicateChannels(channels);
+  const [selectedChannel, setSelectedChannel] = useState("");
   const { setPersonalTodos } = useTodoContext();
   const { sub } = useUserStore();
 
@@ -26,12 +31,16 @@ export default function TodoForm({ setShowTodoForm }: TodoFormProps) {
     channel: string,
     todoID: string
   ) => {
-    await events.post(`/default/${channel}`, {
-      todo,
-      channel,
-      userID: sub,
-      todoID,
-    });
+    try {
+      await events.post(`/default/${channel}`, {
+        todo,
+        channel,
+        userID: sub,
+        todoID,
+      });
+    } catch (error) {
+      console.log("error publishing =", error);
+    }
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -50,7 +59,11 @@ export default function TodoForm({ setShowTodoForm }: TodoFormProps) {
       channel: submittedData.channel?.length > 0 ? submittedData.channel : "",
     };
 
-    if (submittedData.channel && submittedData.channel.length !== 0) {
+    if (
+      selectedChannel &&
+      submittedData.channel &&
+      submittedData.channel.length !== 0
+    ) {
       const res = await createTodoAppsync(todoData);
       handlePublish(submittedData.todo, submittedData.channel, res.TodoID);
       setShowTodoForm(false);
@@ -100,21 +113,28 @@ export default function TodoForm({ setShowTodoForm }: TodoFormProps) {
             />
           </div>
 
-          {/* Channel Input */}
+          {/* Channel Dropdown */}
           <div>
             <label
               htmlFor="channel"
               className="block text-sm font-medium text-gray-700"
             >
-              Channel (Optional)
+              Workspace (Optional)
             </label>
-            <input
-              type="text"
-              name="channel"
+            <select
               id="channel"
+              name="channel"
+              value={selectedChannel}
+              onChange={(e) => setSelectedChannel(e.target.value)}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-              placeholder="leaderboard"
-            />
+            >
+              <option value="">None</option>
+              {filteredChannels.map((channel) => (
+                <option key={channel} value={channel}>
+                  {channel}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Buttons */}
