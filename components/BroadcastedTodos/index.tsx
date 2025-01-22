@@ -42,12 +42,7 @@ const BroadcastedTodos: React.FC = () => {
 
   useEffect(() => {
     if (data) {
-      const filteredSharedTodos = removeDuplicates(
-        data.filter(
-          (item: { TodoID: string }) => !item.TodoID.startsWith("Personal_")
-        )
-      );
-      setSharedTodos(filteredSharedTodos || []);
+      setSharedTodos(data || []);
     }
   }, [data]);
 
@@ -63,32 +58,45 @@ const BroadcastedTodos: React.FC = () => {
     ? [...sharedTodos, ...broadcastedTodos]
     : broadcastedTodos;
 
-  console.log("all shared to dos =", allTodos);
+  const removeDuplicatesTodo = removeDuplicates(allTodos);
 
   // Group todos by channel
-  const groupedTodos: Record<string, BroadcastedTodo[]> = allTodos.reduce(
-    (acc: Record<string, BroadcastedTodo[]>, todo: BroadcastedTodo) => {
-      // Only include todos with a non-empty channel (excluding empty string)
-      if (todo.channel && todo.channel.length > 0) {
-        const channel = todo.channel;
-        if (!acc[channel]) acc[channel] = [];
-        acc[channel].push(todo);
-      }
-      return acc;
-    },
-    {}
-  );
+  const groupedTodos: Record<string, BroadcastedTodo[]> =
+    removeDuplicatesTodo.reduce(
+      (acc: Record<string, BroadcastedTodo[]>, todo: BroadcastedTodo) => {
+        // Only include todos with a non-empty channel (excluding empty string)
+        if (todo.channel && todo.channel.length > 0) {
+          const channel = todo.channel;
+          if (!acc[channel]) acc[channel] = [];
+          acc[channel].push(todo);
+        }
+        return acc;
+      },
+      {}
+    );
   const EditButton: React.FC<EditButtonProps> = ({ userID, todoID }) => {
     const { sub } = useUserStore();
     if (userID === sub) {
       return (
         <button
-          onClick={() => {
-            handleEdit(todoID);
-          }}
-          className="text-indigo-600 hover:text-indigo-900"
+          onClick={() => handleEdit(todoID)}
+          className="text-gray-600 hover:text-gray-800"
+          aria-label="Edit"
         >
-          Edit
+          {/* Pencil Icon */}
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M12 20h9" />
+            <path d="M16.5 3.5a2.121 2.121 0 113 3L7 19l-4 1 1-4 12.5-12.5z" />
+          </svg>
         </button>
       );
     }
@@ -160,26 +168,7 @@ const BroadcastedTodos: React.FC = () => {
                           <Edit title={todo.title} todoId={todo.TodoID} />
                         </>
                       ) : (
-                        <button
-                          onClick={() => handleEdit(todo.TodoID)}
-                          className="text-gray-600 hover:text-gray-800"
-                          aria-label="Edit"
-                        >
-                          {/* Pencil Icon */}
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-5 w-5"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <path d="M12 20h9" />
-                            <path d="M16.5 3.5a2.121 2.121 0 113 3L7 19l-4 1 1-4 12.5-12.5z" />
-                          </svg>
-                        </button>
+                        <EditButton userID={todo.UserID} todoID={todo.TodoID} />
                       )}
                     </div>
                   </div>
